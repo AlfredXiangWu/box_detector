@@ -2,8 +2,9 @@ clear all;
 clc;
 
 %% pre-processing
-% img = imread('../data/chinese.bin.1.remove_red.png');
-img = imread('../data/chinese.bin.remove_red.png');
+img = imread('../data/chinese.bin.1.remove_red.png');
+img_name = 'chinese.bin.1.remove_red.png';
+% img = imread('../data/chinese.bin.remove_red.png');
 [height, width, channel] = size(img);
 
 if channel ~= 1
@@ -43,10 +44,10 @@ v = (v > 0) + (v < 0);
 % end 
 
 %% 
-fh = imopen(h, ones(1,150));
+fh = imopen(h, ones(1, floor(0.2*width)));
 figure, imshow(fh);
 
-fv = imopen(v, ones(150, 1));
+fv = imopen(v, ones(floor(0.5*height), 1));
 figure, imshow(fv);
 
 % f = fh + fv;
@@ -58,16 +59,52 @@ tmp = zeros(1, width);
 for j = 1:height
     tmp = tmp | fv(j, :);
 end
-a = find(tmp==1);
-internal = diff(a);
-idx = find(internal > 0.2*width);
-subplot(131), imshow(img(:, a(idx(1)):a(idx(2))));
-subplot(132), imshow(img(:, a(idx(2)):a(idx(3))));
-subplot(133), imshow(img(:, a(idx(3)):a(end)));
-% fh
-tmp = zeros(height, 1);
-for i = 1:width
-    tmp = tmp | fh(:, i);
+va = find(tmp==1);
+v_internal = diff(va);
+idx = find(v_internal > 0.2*width);
+v_num = length(idx);
+v_idx = [];
+
+for i = 1:v_num
+    v_idx = [v_idx va(idx(i))];
+end
+v_idx = [v_idx va(end)];
+
+% subplot(131), imshow(img(:, v_idx(1):v_idx(2)));
+% subplot(132), imshow(img(:, v_idx(2):v_idx(3)));
+% subplot(133), imshow(img(:, v_idx(3):va(end)));
+clear idx;
+
+for num = 1:length(v_idx) - 1
+    tmp = zeros(height, 1);
+    for i = v_idx(num):v_idx(num+1)
+        tmp = tmp | fh(:, i);
+    end
+    ha = find(tmp==1);
+    h_internal = diff(ha);
+    idx = find(h_internal > 0.2*height);
+    h_num = length(idx);
+    h_idx_tmp = [];
+
+    for i = 1:h_num
+        h_idx_tmp = [h_idx_tmp ha(idx(i))];
+    end
+    h_idx_tmp = [h_idx_tmp ha(end)];
+    h_idx{num} = h_idx_tmp;
+end
+
+%% save
+count = 1;
+for i = 1:length(v_idx) - 1
+    v_start = v_idx(i);
+    v_end = v_idx(i+1);
+    for j = 1:length(h_idx{i}) - 1
+        h_start = h_idx{i}(j);
+        h_end = h_idx{i}(j+1);
+        save_path = sprintf('%s_%d.jpg', img_name, count);
+        imwrite(img(h_start:h_end, v_start:v_end), save_path);
+        count = count + 1;
+    end
 end
 
 
