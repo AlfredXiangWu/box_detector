@@ -2,9 +2,11 @@ clear all;
 clc;
 
 %% pre-processing
-img = imread('../data/chinese.bin.1.remove_red.png');
-img_name = 'chinese.bin.1.remove_red.png';
-% img = imread('../data/chinese.bin.remove_red.png');
+% img = imread('../data/chinese.bin.1.png');
+img_name = 'chinese.bin.png';
+
+
+img = imread('../data/chinese.bin.png');
 [height, width, channel] = size(img);
 
 if channel ~= 1
@@ -14,6 +16,8 @@ end
 img = im2double(img);
 wavelet_name = 'db1';
 iter = 5;
+pad = 10;
+
 
 %% wavelet transform
 [h, v] = wavelet_transform_2d_n(img, wavelet_name, iter);
@@ -77,7 +81,8 @@ clear idx;
 
 for num = 1:length(v_idx) - 1
     tmp = zeros(height, 1);
-    for i = v_idx(num):v_idx(num+1)
+    internal_tmp = v_idx(num+1) - v_idx(num);
+    for i = (v_idx(num) + floor(0.2*internal_tmp)):(v_idx(num+1) - floor(0.2*internal_tmp))
         tmp = tmp | fh(:, i);
     end
     ha = find(tmp==1);
