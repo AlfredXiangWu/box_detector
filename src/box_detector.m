@@ -36,7 +36,7 @@ function res = box_detector(img_dir, param, save_dir)
         v = (v > 0) + (v < 0);
         
         % line detect
-        fh = imopen(h, ones(1, floor(0.2*width)));
+        fh = imopen(h, ones(1, floor(0.15*width)));
         fv = imopen(v, ones(floor(0.3*height), 1));
         
         % crop
@@ -99,7 +99,7 @@ function res = box_detector(img_dir, param, save_dir)
         fprintf(log_fid, '%s box detect: %d!\n', img_name{1}, count-1);
     end
     
-    close(log_fid);
+    fclose(log_fid);
 	res = 1;
 end
 
