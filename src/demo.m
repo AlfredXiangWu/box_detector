@@ -3,8 +3,8 @@ clc;
 
 
 %% parameter
-img_dir = '../data/scan_image.01/';
-save_dir = '../result/scan_image.01/';
+img_dir = '../data/scan_image/';
+save_dir = '../result/scan_image/';
 
 param.wavelet_name = 'db1';
 param.iter = 7;

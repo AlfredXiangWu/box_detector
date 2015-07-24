@@ -1,9 +1,9 @@
 function res = box_detector(img_dir, param, save_dir)
 
     %% log
-    clk = clock();
-    log_fn = sprintf('fa2_%4d%02d%02d%02d%02d%02d.log', [clk(1:5) floor(clk(6))]);
-    log_fid = fopen(log_fn, 'w+');
+%     clk = clock();
+%     log_fn = sprintf('fa2_%4d%02d%02d%02d%02d%02d.log', [clk(1:5) floor(clk(6))]);
+%     log_fid = fopen(log_fn, 'w+');
     
     %% parameters
     wavelet_name = param.wavelet_name;
@@ -51,16 +51,16 @@ function res = box_detector(img_dir, param, save_dir)
         v_num = length(idx);
         v_idx = [];
         for i = 1:v_num
-            v_idx = [v_idx va(idx(i))];
+            v_idx = [v_idx [va(idx(i)); va(idx(i)+1)]];
         end
-        v_idx = [v_idx va(end) - pad_v];
+%         v_idx = [v_idx va(end) - pad_v];
         clear idx;
         
         % fh
-        for num = 1:length(v_idx) - 1
+        for num = 1:size(v_idx, 2)
             tmp = zeros(height, 1);
-            internal_tmp = v_idx(num+1) - v_idx(num);
-            for i = (v_idx(num) + floor(0.2*internal_tmp)):(v_idx(num+1) - floor(0.2*internal_tmp))
+            internal_tmp = v_idx(2, num) - v_idx(1, num);
+            for i = (v_idx(1, num) + floor(0.2*internal_tmp)):(v_idx(2, num) - floor(0.2*internal_tmp))
                 tmp = tmp | fh(:, i);
             end
             ha = find(tmp==1);
@@ -70,9 +70,9 @@ function res = box_detector(img_dir, param, save_dir)
             h_idx_tmp = [];
 
             for i = 1:h_num
-                h_idx_tmp = [h_idx_tmp ha(idx(i))];
+                h_idx_tmp = [h_idx_tmp [ha(idx(i)); ha(idx(i)+1)]];
             end
-            h_idx_tmp = [h_idx_tmp ha(end) - pad_h];
+%             h_idx_tmp = [h_idx_tmp ha(end) - pad_h];
             h_idx{num} = h_idx_tmp;
         end
         img_name = regexp(img_name, '\.*', 'split');
@@ -82,14 +82,15 @@ function res = box_detector(img_dir, param, save_dir)
         end
         % save
         count = 1;
-        for i = 1:length(v_idx) - 1
-            v_start = v_idx(i);
-            v_end = v_idx(i+1);
-            for j = 1:length(h_idx{i}) - 1
-                h_start = h_idx{i}(j);
-                h_end = h_idx{i}(j+1);
+        for i = 1:size(v_idx, 2) 
+            v_start = v_idx(1, i);
+            v_end = v_idx(2, i);
+            for j = 1:size(h_idx{i}, 2) 
+                h_start = h_idx{i}(1, j);
+                h_end = h_idx{i}(2, j);
                
                 save_path = sprintf('%s/%s_%03d.jpg', path, img_name{1}, count);
+                tmp = img(h_start:h_end, v_start:v_end);
                 imwrite(img(h_start:h_end, v_start:v_end), save_path);
                 count = count + 1;            
             end
@@ -116,4 +117,27 @@ function [h, v] = wavelet_transform_2d_n(signal, wavelet_name, iter)
         z = conv2(v, Hi_D(:)','same');
         v = conv2(z, Lo_D(:),'same');
     end
+end
+
+
+%% blank remove
+function res = blank_remove(img, blank_width)
+    res = [];
+    [h, w] = size(img);
+    tmp = ones(h, 1);
+    for i = 1:w
+        tmp = tmp & img(:, i);
+    end
+    
+    idx = find(tmp==1);
+    tmp_diff = diff(idx);
+    idx_diff = find(tmp_diff > blank_width);
+    if isempty(idx_diff)
+        res = img;
+    else
+        for i = 1:length(idx_diff) - 1
+            res = [res; img(idx(idx_diff(i)):idx(idx_diff(i+1)), :)];
+        end     
+    end
+    
 end
