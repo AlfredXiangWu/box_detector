@@ -8,7 +8,6 @@ save_dir = '../result/scan_image/';
 
 param.wavelet_name = 'db1';
 param.iter = 7;
-param.pad_v = 400;
-param.pad_h = 300;
+ param.blank_width = 80;
 
 res = box_detector(img_dir, param, save_dir);

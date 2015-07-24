@@ -1,17 +1,15 @@
 function res = box_detector(img_dir, param, save_dir)
 
     %% log
-%     clk = clock();
-%     log_fn = sprintf('fa2_%4d%02d%02d%02d%02d%02d.log', [clk(1:5) floor(clk(6))]);
-%     log_fid = fopen(log_fn, 'w+');
+    clk = clock();
+    log_fn = sprintf('../result/fa2_%4d%02d%02d%02d%02d%02d.log', [clk(1:5) floor(clk(6))]);
+    log_fid = fopen(log_fn, 'w+');
     
     %% parameters
     wavelet_name = param.wavelet_name;
     iter = param.iter;
-    pad_v = param.pad_v;
-    pad_h = param.pad_h;
+    blank_width = param.blank_width;
      
-
     %% process
     subdir =dir(img_dir);
     for i = 1:length(subdir)
@@ -53,7 +51,6 @@ function res = box_detector(img_dir, param, save_dir)
         for i = 1:v_num
             v_idx = [v_idx [va(idx(i)); va(idx(i)+1)]];
         end
-%         v_idx = [v_idx va(end) - pad_v];
         clear idx;
         
         % fh
@@ -72,26 +69,27 @@ function res = box_detector(img_dir, param, save_dir)
             for i = 1:h_num
                 h_idx_tmp = [h_idx_tmp [ha(idx(i)); ha(idx(i)+1)]];
             end
-%             h_idx_tmp = [h_idx_tmp ha(end) - pad_h];
             h_idx{num} = h_idx_tmp;
         end
         img_name = regexp(img_name, '\.*', 'split');
-        path = sprintf('%s%s', save_dir, img_name{1});
+        path = sprintf('%s', save_dir);
         if ~exist(path)
             mkdir(path);
         end
+        
         % save
         count = 1;
         for i = 1:size(v_idx, 2) 
-            v_start = v_idx(1, i);
+            v_start = v_idx(1, i) + 1;
             v_end = v_idx(2, i);
             for j = 1:size(h_idx{i}, 2) 
-                h_start = h_idx{i}(1, j);
-                h_end = h_idx{i}(2, j);
+                h_start = h_idx{i}(1, j) + 1;
+                h_end = h_idx{i}(2, j) - 1;
                
                 save_path = sprintf('%s/%s_%03d.jpg', path, img_name{1}, count);
                 tmp = img(h_start:h_end, v_start:v_end);
-                imwrite(img(h_start:h_end, v_start:v_end), save_path);
+                save_patch = blank_remove(tmp, blank_width);
+                imwrite(save_patch, save_path);
                 count = count + 1;            
             end
         end
@@ -125,19 +123,37 @@ function res = blank_remove(img, blank_width)
     res = [];
     [h, w] = size(img);
     tmp = ones(h, 1);
-    for i = 1:w
+    for i = floor(0.2*w):floor(0.8*w)
         tmp = tmp & img(:, i);
     end
     
-    idx = find(tmp==1);
-    tmp_diff = diff(idx);
-    idx_diff = find(tmp_diff > blank_width);
-    if isempty(idx_diff)
-        res = img;
-    else
-        for i = 1:length(idx_diff) - 1
-            res = [res; img(idx(idx_diff(i)):idx(idx_diff(i+1)), :)];
-        end     
+    % search 
+    idx = [];
+    idx_start = 1;
+    blank_length = 0;
+    
+    for i =1:length(tmp)
+        if tmp(i) == 1           
+            blank_length = blank_length + 1;
+        else
+            if blank_length > blank_width
+                idx = [idx [idx_start; i]];
+            end
+            idx_start = i + 1;
+            blank_length = 0;
+        end
     end
     
+    % last blank
+    if blank_length > blank_width
+        idx = [idx [idx_start; i]];
+    end
+    
+    if ~isempty(idx)
+        for i = size(idx, 2):-1:1
+            img(idx(1, i)+2:idx(2, i), :) =[];
+        end
+    end
+    res = img;
 end
+
