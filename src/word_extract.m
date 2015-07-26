@@ -2,7 +2,7 @@ function res = word_extract( img_dir, param, save_dir )
     
     %% parameter
     step = param.step;
-
+    
     %% process
     subdir =dir(img_dir);
     for iter = 1:length(subdir)
@@ -21,7 +21,7 @@ function res = word_extract( img_dir, param, save_dir )
         end
         img = im2double(img);
         
-        img = imrotate(img, 180);
+%         img = imrotate(img, 180);
         
         [h, v] = wavelet_transform_2d_n(img, 'db1', 5);
         h = (h > 0) + (h < 0);
@@ -37,7 +37,7 @@ function res = word_extract( img_dir, param, save_dir )
         end
         h_tmp = find(temp==1);
         h_tmp_diff = diff(h_tmp);
-        h_diff_idx = find(h_tmp_diff > 80);
+        h_diff_idx = find(h_tmp_diff > 60);
         h_idx = [];
         for i = 1:size(h_diff_idx, 1)
             h_idx = [h_idx [h_tmp(h_diff_idx(i)); h_tmp(h_diff_idx(i)+1)]];
@@ -50,7 +50,7 @@ function res = word_extract( img_dir, param, save_dir )
 
         w_tmp = find(temp==1);
         w_tmp_diff = diff(w_tmp);
-        w_diff_idx = find(w_tmp_diff > 80);
+        w_diff_idx = find(w_tmp_diff > 60);
         w_idx = [];
         for i = 1:size(w_diff_idx, 2)
             w_idx = [w_idx [w_tmp(w_diff_idx(i)); w_tmp(w_diff_idx(i)+1)]];
@@ -71,9 +71,15 @@ function res = word_extract( img_dir, param, save_dir )
                 wstart = max(w_idx(1, j) + 10, 1);
                 wend = min(w_idx(2, j) + 15, width);
                 tmp = img(hstart:hend, wstart:wend);
-                tmp = (tmp > 0.8); 
+%                 tmp = (tmp > 0.8); 
                 save_patch = word_alignment(tmp, step);
+                
+                % error detector
+                per = numel(find((save_patch>0.8)==0))/(size(tmp, 1)*size(tmp, 2));       
                 save_path = sprintf('%s/%s_%03d.jpg', path, img_name{1}, count);
+                if per < 0.01
+                    continue;
+                end   
                 imwrite(save_patch, save_path);
                 count = count + 1;
             end
@@ -83,17 +89,20 @@ function res = word_extract( img_dir, param, save_dir )
     res = 1;
 end
 
+
 function res = word_alignment(img, step)
     [height, width] = size(img);
+    
+    binary = img > 0.8;
     
     idx = [];
     tmp = ones(length((1+step):(height-step)), 1);
     for i = (1+step):(width-step)
-        tmp = tmp & img((1+step):(height-step), i);
+        tmp = tmp & binary((1+step):(height-step), i);
     end
     idx = find(tmp==0);
     if isempty(idx)
-        res = img;
+        res = binary;
         return;
     end
     hstart = max(step + idx(1) - 4, 1);
@@ -102,11 +111,11 @@ function res = word_alignment(img, step)
     idx = [];
     tmp = ones(1, length((1+step):(width-step)));
     for i = (1+step):(height-step)
-        tmp = tmp & img(i, (1+step):(width-step));
+        tmp = tmp & binary(i, (1+step):(width-step));
     end
     idx = find(tmp==0);
     if isempty(idx)
-        res = img;
+        res = binary;
         return;
     end
     wstart = max(step + idx(1) - 4, 1);
@@ -116,3 +125,4 @@ function res = word_alignment(img, step)
     res = img(hstart:hend, wstart:wend);
     
 end
+

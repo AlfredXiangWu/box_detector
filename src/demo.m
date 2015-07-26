@@ -13,8 +13,8 @@ clc;
 % res = box_detector(img_dir, param, save_dir);
 
 %% word extract
-img_dir = '../data/foxconn/';
-save_dir = '../result/foxconn/';
+img_dir = '../data/';
+save_dir = '../result/';
 
 param.step = 10;
 
