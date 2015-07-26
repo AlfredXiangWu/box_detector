@@ -1,10 +1,10 @@
 function res = box_detector(img_dir, param, save_dir)
 
     %% log
-    clk = clock();
-    log_fn = sprintf('../result/fa2_%4d%02d%02d%02d%02d%02d.log', [clk(1:5) floor(clk(6))]);
-    log_fid = fopen(log_fn, 'w+');
-    
+%     clk = clock();
+%     log_fn = sprintf('../result/fa2_%4d%02d%02d%02d%02d%02d.log', [clk(1:5) floor(clk(6))]);
+%     log_fid = fopen(log_fn, 'w+');
+%     
     %% parameters
     wavelet_name = param.wavelet_name;
     iter = param.iter;
@@ -12,6 +12,7 @@ function res = box_detector(img_dir, param, save_dir)
      
     %% process
     subdir =dir(img_dir);
+%     parfor i = 1:length(subdir)
     for i = 1:length(subdir)
         if subdir(i).isdir
             continue;
@@ -35,7 +36,7 @@ function res = box_detector(img_dir, param, save_dir)
         
         % line detect
         fh = imopen(h, ones(1, floor(0.15*width)));
-        fv = imopen(v, ones(floor(0.3*height), 1));
+        fv = imopen(v, ones(floor(0.2*height), 1));
         
         % crop
         % fv
@@ -48,26 +49,27 @@ function res = box_detector(img_dir, param, save_dir)
         idx = find(v_diff > 0.2*width);
         v_num = length(idx);
         v_idx = [];
-        for i = 1:v_num
-            v_idx = [v_idx [va(idx(i)); va(idx(i)+1)]];
+        for i1 = 1:v_num
+            v_idx = [v_idx [va(idx(i1)); va(idx(i1)+1)]];
         end
-        clear idx;
+        idx = [];
         
         % fh
+        h_idx = {};
         for num = 1:size(v_idx, 2)
             tmp = zeros(height, 1);
             internal_tmp = v_idx(2, num) - v_idx(1, num);
-            for i = (v_idx(1, num) + floor(0.2*internal_tmp)):(v_idx(2, num) - floor(0.2*internal_tmp))
-                tmp = tmp | fh(:, i);
+            for i2 = (v_idx(1, num) + floor(0.2*internal_tmp)):(v_idx(2, num) - floor(0.2*internal_tmp))
+                tmp = tmp | fh(:, i2);
             end
             ha = find(tmp==1);
             h_internal = diff(ha);
-            idx = find(h_internal > 0.2*height);
+            idx = find(h_internal > 0.1*height);
             h_num = length(idx);
             h_idx_tmp = [];
 
-            for i = 1:h_num
-                h_idx_tmp = [h_idx_tmp [ha(idx(i)); ha(idx(i)+1)]];
+            for i3 = 1:h_num
+                h_idx_tmp = [h_idx_tmp [ha(idx(i3)); ha(idx(i3)+1)]];
             end
             h_idx{num} = h_idx_tmp;
         end
@@ -79,42 +81,27 @@ function res = box_detector(img_dir, param, save_dir)
         
         % save
         count = 1;
-        for i = 1:size(v_idx, 2) 
-            v_start = v_idx(1, i) + 1;
-            v_end = v_idx(2, i);
-            for j = 1:size(h_idx{i}, 2) 
-                h_start = h_idx{i}(1, j) + 1;
-                h_end = h_idx{i}(2, j) - 1;
-               
+        for i4 = 1:size(v_idx, 2) 
+            v_start = v_idx(1, i4) + 1;
+            v_end = v_idx(2, i4);
+            for j = 1:size(h_idx{i4}, 2) 
+                h_start = h_idx{i4}(1, j) + 1;
+                h_end = h_idx{i4}(2, j) - 1;              
                 save_path = sprintf('%s/%s_%03d.jpg', path, img_name{1}, count);
                 tmp = img(h_start:h_end, v_start:v_end);
                 save_patch = blank_remove(tmp, blank_width);
+                
                 imwrite(save_patch, save_path);
                 count = count + 1;            
             end
         end
         
         % write log
-        fprintf(log_fid, '%s box detect: %d!\n', img_name{1}, count-1);
+        % fprintf(log_fid, '%s box detect: %d!\n', img_name{1}, count-1);
     end
     
-    fclose(log_fid);
+%     fclose(log_fid);
 	res = 1;
-end
-
-%% wavelet transform
-function [h, v] = wavelet_transform_2d_n(signal, wavelet_name, iter)
-    [Lo_D,Hi_D] = wfilters(wavelet_name,'d');
-
-    h = signal;
-    v = signal;
-
-    for i = 1:iter
-        y = conv2(h, Lo_D(:)','same');
-        h = conv2(y, Hi_D(:), 'same');
-        z = conv2(v, Hi_D(:)','same');
-        v = conv2(z, Lo_D(:),'same');
-    end
 end
 
 
@@ -151,7 +138,7 @@ function res = blank_remove(img, blank_width)
     
     if ~isempty(idx)
         for i = size(idx, 2):-1:1
-            img(idx(1, i)+2:idx(2, i), :) =[];
+            img(idx(1, i):idx(2, i), :) =[];
         end
     end
     res = img;
