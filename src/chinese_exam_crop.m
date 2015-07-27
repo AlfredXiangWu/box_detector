@@ -2,6 +2,7 @@ function res = chinese_exam_crop(img_dir, param, save_dir)
      %% parameters
     wavelet_name = param.wavelet_name;
     thr_word = param.thr_word;
+    step = param.step;
      
     %% process
     
@@ -88,13 +89,14 @@ function res = chinese_exam_crop(img_dir, param, save_dir)
                     end
                     for n = 1:size(word_idx, 2)
                         save_patch = tmp(:, word_idx(1, n):word_idx(2, n));
-                        save_path = sprintf('%s%s_%03d_%03d.jpg', path, img_name{1}, count, n);
+                        save_path = sprintf('%s%s_%03d_%03d.jpg', path, img_name{1}, count, n);   
+                        save_patch = word_fix(save_patch);
                         % blank remove
                         per = numel(find((save_patch>0.8)==0))/(size(save_patch, 1)*size(save_patch, 2));       
-                        if per < 0.1
+                        if per < 0.15
                             continue;
-                        end   
-                        save_patch = word_fix(save_patch);
+                        end
+                        save_patch = word_alignment(save_patch, step);
                         imwrite(save_patch, save_path);
                     end
                 else

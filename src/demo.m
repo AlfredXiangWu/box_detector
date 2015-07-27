@@ -5,7 +5,6 @@ clc;
 %% box detect and segment
 % img_dir = '../data/chinese/';
 % save_dir = '../result/chinese/';
-% 
 % param.wavelet_name = 'db1';
 % param.iter = 7;
 % param.blank_width = 80;
@@ -27,5 +26,6 @@ save_dir = '../result/chinese/';
 
 param.wavelet_name = 'db1';
 param.thr_word = 0.03;
+param.step = 0;
 
-res = chinese_exam_crop(img_dir, param, save_dir)
+res = chinese_exam_crop(img_dir, param, save_dir);
