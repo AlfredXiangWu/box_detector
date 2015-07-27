@@ -1,6 +1,7 @@
 clear all;
 clc;
 
+addpath('./util/');
 
 %% box detect and segment
 % img_dir = '../data/chinese/';
