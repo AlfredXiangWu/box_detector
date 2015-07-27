@@ -24,6 +24,8 @@ function res = chinese_exam_crop(img_dir, param, save_dir)
         end
         img = im2double(img);
         
+
+        
         % wavelet transform
         [h, v] = wavelet_transform_2d_n(img, wavelet_name, 5);
         h = (h > 0) + (h < 0);
@@ -81,14 +83,23 @@ function res = chinese_exam_crop(img_dir, param, save_dir)
                     continue;
                 end   
                
-                [flag, word_idx] = is_chinese_paper(tmp, thr_word);      
+                [flag, word_idx] = is_chinese_paper(tmp, thr_word); 
+                
+                % line remove
+                min_peak_dist = size(tmp, 1) - 1;               
+                tmp = line_remove((tmp > 0.6), min_peak_dist);
+                
+                
                 if flag
+                    % line remove
+%                     tmp = line_remove(tmp', min_peak_dist);
+%                     tmp = tmp';
                     path = sprintf('%s/article/', save_dir);
                     if ~exist(path)
                         mkdir(path);
                     end
                     for n = 1:size(word_idx, 2)
-                        save_patch = tmp(:, word_idx(1, n):word_idx(2, n));
+                        save_patch = tmp(:, word_idx(1, n):word_idx(2, n));           
                         save_path = sprintf('%s%s_%03d_%03d.jpg', path, img_name{1}, count, n);   
                         save_patch = word_fix(save_patch);
                         % blank remove
