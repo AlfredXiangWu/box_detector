@@ -7,7 +7,7 @@ function res = chinese_exam_crop(img_dir, param, save_dir)
     %% process
     
     subdir =dir(img_dir);
-%     parfor i = 1:length(subdir)
+%     parfor iter = 1:length(subdir)
     for iter = 1:length(subdir)
         if subdir(iter).isdir
             continue;
@@ -73,7 +73,7 @@ function res = chinese_exam_crop(img_dir, param, save_dir)
             v_end = v_idx(2, i);
             for j = 1:size(h_idx{i}, 2) 
                 h_start = h_idx{i}(1, j) + 1;
-                h_end = h_idx{i}(2, j) - 1;              
+                h_end = h_idx{i}(2, j) -1;              
 
                 tmp = img(h_start:h_end, v_start:v_end);
                 per = numel(find((tmp>0.8)==0))/(size(tmp, 1)*size(tmp, 2));       

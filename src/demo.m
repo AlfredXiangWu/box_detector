@@ -14,7 +14,6 @@ clc;
 %% word extract
 % img_dir = '../data/';
 % save_dir = '../result/';
-% 
 % param.step = 10;
 % 
 % res = word_extract( img_dir, param, save_dir );
