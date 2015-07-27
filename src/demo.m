@@ -27,6 +27,5 @@ save_dir = '../result/chinese/';
 param.wavelet_name = 'db1';
 param.thr_word = 0.03;
 param.step = 0;
-param.min_peak_dist = 75;
 
 res = chinese_exam_crop(img_dir, param, save_dir);
