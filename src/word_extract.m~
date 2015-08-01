@@ -76,11 +76,10 @@ function res = word_extract( img_dir, param, save_dir )
                 wend = min(w_idx(2, j) + 0, width);
                 tmp = img(hstart:hend, wstart:wend);
 %                 tmp = (tmp > 0.8); 
-                [save_patch] = word_alignment(tmp, step);
+                [save_patch, tmp_idx] = word_alignment(tmp, step);
                 
 %                 gt = img((hstart-38):(hstart - 3), (wstart+tmp_idx.wstart):(wstart+tmp_idx.wend));
-                gt = img((hstart-40):(hstart - 1), wstart:wend);
-                [gt] = word_alignment(gt, step);
+                gt = img((hstart-38):(hstart - 3), wstart:wend)
                 % error detector
                 per = numel(find((save_patch>0.8)==0))/(size(tmp, 1)*size(tmp, 2));       
                 save_path = sprintf('%s/%s_%03d.png', path1, img_name{1}, count);
