@@ -13,8 +13,8 @@ addpath('./util/');
 % res = box_detector(img_dir, param, save_dir);
 
 %% word extract
-img_dir = '../data/foxconn/';
-save_dir = '../result/foxconn/';
+img_dir = '../data/bad_case/';
+save_dir = '../result/bad_case/';
 param.step = 10;
 
 res = word_extract( img_dir, param, save_dir );

@@ -29,7 +29,7 @@ function res = word_extract( img_dir, param, save_dir )
         
         % crop word
         fh = imopen(h, ones(1, floor(0.2*width)));
-        fv = imopen(v, ones(floor(0.16*height), 1));
+        fv = imopen(v, ones(floor(0.2*height), 1));
 
         temp = zeros(length((1+step):(height-step)), 1);
         for i = floor(0.4*width):floor(0.5*width)
@@ -40,6 +40,9 @@ function res = word_extract( img_dir, param, save_dir )
         h_diff_idx = find(h_tmp_diff > 60);
         h_idx = [];
         for i = 1:size(h_diff_idx, 1)
+            if(h_tmp(h_diff_idx(i)) < 50)
+                continue;
+            end
             h_idx = [h_idx [h_tmp(h_diff_idx(i)); h_tmp(h_diff_idx(i)+1)]];
         end
 
@@ -78,15 +81,14 @@ function res = word_extract( img_dir, param, save_dir )
 %                 tmp = (tmp > 0.8); 
                 [save_patch] = word_alignment(tmp, step);
                 
-%                 gt = img((hstart-38):(hstart - 3), (wstart+tmp_idx.wstart):(wstart+tmp_idx.wend));
-                gt = img((hstart-40):(hstart - 1), wstart:wend);
-                [gt] = word_alignment(gt, step);
                 % error detector
                 per = numel(find((save_patch>0.8)==0))/(size(tmp, 1)*size(tmp, 2));       
                 save_path = sprintf('%s/%s_%03d.png', path1, img_name{1}, count);
                 if per < 0.01
                     continue;
                 end   
+                gt = img((hstart-40):(hstart - 1), wstart:wend);
+                [gt] = word_alignment(gt, step);
                 gt_path = sprintf('%s/%s_%03d.png', path2, img_name{1}, count);
                 imwrite(save_patch, save_path);
                 imwrite(gt, gt_path);
