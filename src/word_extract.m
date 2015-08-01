@@ -58,29 +58,36 @@ function res = word_extract( img_dir, param, save_dir )
 
         % word cropped, binary and save
         img_name = regexp(img_name, '\.*', 'split');
-        path = sprintf('%s', save_dir);
-        if ~exist(path)
-            mkdir(path);
+        path1 = sprintf('%s/handwriting', save_dir);
+        if ~exist(path1)
+            mkdir(path1);
+        end
+        path2 = sprintf('%s/gt', save_dir);
+        if ~exist(path2)
+            mkdir(path2);
         end
         
         count = 1;
         for i = 1:size(h_idx, 2) - 1
             for j = 1:size(w_idx, 2) - 1
-                hstart = max(h_idx(1, i) + 10, 1);
-                hend = min(h_idx(2, i) + 15, height);
-                wstart = max(w_idx(1, j) + 10, 1);
-                wend = min(w_idx(2, j) + 15, width);
+                hstart = max(h_idx(1, i) + 5, 1);
+                hend = min(h_idx(2, i) + 5, height);
+                wstart = max(w_idx(1, j) + 0, 1);
+                wend = min(w_idx(2, j) + 0, width);
                 tmp = img(hstart:hend, wstart:wend);
 %                 tmp = (tmp > 0.8); 
                 save_patch = word_alignment(tmp, step);
                 
                 % error detector
                 per = numel(find((save_patch>0.8)==0))/(size(tmp, 1)*size(tmp, 2));       
-                save_path = sprintf('%s/%s_%03d.png', path, img_name{1}, count);
+                save_path = sprintf('%s/%s_%03d.png', path1, img_name{1}, count);
                 if per < 0.01
                     continue;
                 end   
+                gt = img((hstart-40):(hstart - 3), wstart:wend);
+                gt_path = sprintf('%s/%s_%03d.png', path2, img_name{1}, count);
                 imwrite(save_patch, save_path);
+                imwrite(gt, gt_path);
                 count = count + 1;
             end
         end

@@ -13,11 +13,11 @@ addpath('./util/');
 % res = box_detector(img_dir, param, save_dir);
 
 %% word extract
-% img_dir = '../data/exam/';
-% save_dir = '../result/exam/';
-% param.step = 10;
-% 
-% res = word_extract( img_dir, param, save_dir );
+img_dir = '../data/foxconn/';
+save_dir = '../result/foxconn/';
+param.step = 10;
+
+res = word_extract( img_dir, param, save_dir );
 
 
 %% chinese demo
@@ -31,11 +31,11 @@ addpath('./util/');
 % res = chinese_exam_crop(img_dir, param, save_dir);
 
 %%
-img_dir = '../data/test/';
-save_dir = '../result/test/';
-
-param.wavelet_name = 'db1';
-param.thr_word = 0.03;
-param.step = 0;
-
-res = exam_crop(img_dir, param, save_dir);
+% img_dir = '../data/test/';
+% save_dir = '../result/test/';
+% 
+% param.wavelet_name = 'db1';
+% param.thr_word = 0.03;
+% param.step = 0;
+% 
+% res = exam_crop(img_dir, param, save_dir);
