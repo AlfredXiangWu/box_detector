@@ -76,7 +76,7 @@ function res = word_extract( img_dir, param, save_dir )
                 
                 % error detector
                 per = numel(find((save_patch>0.8)==0))/(size(tmp, 1)*size(tmp, 2));       
-                save_path = sprintf('%s/%s_%03d.jpg', path, img_name{1}, count);
+                save_path = sprintf('%s/%s_%03d.png', path, img_name{1}, count);
                 if per < 0.01
                     continue;
                 end   
